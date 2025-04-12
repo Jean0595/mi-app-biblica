@@ -81,7 +81,7 @@
         }
 
         const libroIngles = libros[libro];
-        const url = `https://thingproxy.freeboard.io/fetch/https://api.biblia.com/v1/bible/content/RVR60.json?passage=${libroIngles}+${cap}:${vers}&key=${API_KEY}`;
+        const url = `https://api.biblia.com/v1/bible/content/RVR60.json?passage=${libroIngles}+${cap}:${vers}&key=${API_KEY}`;
 
         fetch(url)
           .then(res => {
