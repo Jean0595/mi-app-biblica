@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Buscador de Versículos Bíblicos</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2rem;
+      background: #f2f2f2;
+    }
+    button {
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      margin-top: 1rem;
+    }
+    #versiculo {
+      margin-top: 2rem;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📖 Versículos por Voz</h1>
+  <p>Di algo como: <strong>"Juan 3:16"</strong></p>
+  <button onclick="startListening()">🎤 Escuchar</button>
+
+  <div id="resultado"></div>
+
+  <script>
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'es-ES';
+
+    const API_KEY = "https://api.biblia.com/v1/bible/find?key=abc123"; // Aquí pon tu clave de la API de Biblia
+
+    function startListening() {
+      document.getElementById("resultado").innerHTML = "<em>Escuchando...</em>";
+      recognition.start();
+    }
+
+    recognition.onresult = function(event) {
+      const transcript = event.results[0][0].transcript;
+      document.getElementById("resultado").innerHTML = `🔎 Texto detectado: <strong>${transcript}</strong>`;
+      buscarVersiculo(transcript);
+    };
+
+    function buscarVersiculo(texto) {
+      const regex = /([a-zA-ZáéíóúñÁÉÍÓÚÑ]+)\s+(\d+):(\d+)/;
+      const match = texto.match(regex);
+
+      if (match) {
+        let libro = match[1].toLowerCase();
+        const cap = match[2];
+        const vers = match[3];
+
+        // Diccionario simple para convertir nombres de libros
+        const libros = {
+          "juan": "John",
+          "mateo": "Matthew",
+          "marcos": "Mark",
+          "lucas": "Luke",
+          "genesis": "Genesis",
+          "salmos": "Psalms",
+          "proverbios": "Proverbs",
+          "romanos": "Romans",
+          "hechos": "Acts"
+          // Agrega más si lo deseas
+        };
+
+        if (!libros[libro]) {
+          document.getElementById("resultado").innerHTML += "<br><strong>⚠️ Libro no reconocido.</strong>";
+          return;
+        }
+
+        const libroIngles = libros[libro];
+        const url = `https://cors-anywhere.herokuapp.com/https://api.biblia.com/v1/bible/content/RVR1960.json?passage=${libroIngles}+${cap}:${vers}&key=${API_KEY}`;
+
+        // Vamos a verificar y mostrar la URL para depuración
+        console.log("URL de la solicitud:", url);
+
+        fetch(url)
+          .then(res => {
+            if (!res.ok) {
+              throw new Error(`Error HTTP: ${res.status}`);
+            }
+            return res.json();
+          })
+          .then(data => {
+            console.log("Datos recibidos:", data); // Mostrar los datos recibidos
+            if (data.text) {
+              document.getElementById("resultado").innerHTML += `
+                <div id="versiculo">
+                  <h3>${libro} ${cap}:${vers}</h3>
+                  <p>${data.text}</p>
+                </div>
+              `;
+            } else {
+              document.getElementById("resultado").innerHTML += `<br><strong>No se encontró el versículo.</strong>`;
+            }
+          })
+          .catch(err => {
+            console.error("Error al hacer la solicitud:", err);
+            document.getElementById("resultado").innerHTML += `<br><strong>Error al buscar el versículo: ${err.message}</strong>`;
+          });
+      } else {
+        document.getElementById("resultado").innerHTML += `<br><strong>No se reconoció un versículo.</strong>`;
+      }
+    }
+  </script>
+</body>
+</html>
