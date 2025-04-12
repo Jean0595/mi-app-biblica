@@ -40,7 +40,7 @@
     const recognition = new SpeechRecognition();
     recognition.lang = 'es-ES';
 
-    const API_KEY = "https://api.biblia.com/v1/bible/find?key=b7b398825afd3e2a1a28327c82966f51"; // Aquí pon tu clave de la API de Biblia
+    const API_KEY = "b7b398825afd3e2a1a28327c82966f51"; // ⬅️ Reemplaza con tu clave de la API de Biblia.com
 
     function startListening() {
       document.getElementById("resultado").innerHTML = "<em>Escuchando...</em>";
@@ -62,7 +62,6 @@
         const cap = match[2];
         const vers = match[3];
 
-        // Diccionario simple para convertir nombres de libros
         const libros = {
           "juan": "John",
           "mateo": "Matthew",
@@ -73,7 +72,7 @@
           "proverbios": "Proverbs",
           "romanos": "Romans",
           "hechos": "Acts"
-          // Agrega más si lo deseas
+          // Puedes añadir más libros aquí
         };
 
         if (!libros[libro]) {
@@ -82,10 +81,7 @@
         }
 
         const libroIngles = libros[libro];
-        const url = `https://cors-anywhere.herokuapp.com/https://api.biblia.com/v1/bible/content/RVR1960.json?passage=${libroIngles}+${cap}:${vers}&key=${API_KEY}`;
-
-        // Vamos a verificar y mostrar la URL para depuración
-        console.log("URL de la solicitud:", url);
+        const url = `https://api.biblia.com/v1/bible/content/RVR1960.json?passage=${libroIngles}+${cap}:${vers}&key=${API_KEY}`;
 
         fetch(url)
           .then(res => {
@@ -95,7 +91,6 @@
             return res.json();
           })
           .then(data => {
-            console.log("Datos recibidos:", data); // Mostrar los datos recibidos
             if (data.text) {
               document.getElementById("resultado").innerHTML += `
                 <div id="versiculo">
@@ -108,7 +103,6 @@
             }
           })
           .catch(err => {
-            console.error("Error al hacer la solicitud:", err);
             document.getElementById("resultado").innerHTML += `<br><strong>Error al buscar el versículo: ${err.message}</strong>`;
           });
       } else {
